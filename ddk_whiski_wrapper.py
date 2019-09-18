@@ -1,5 +1,5 @@
 """
-ddk_whiskvid_processing.py
+ddk_whisi_wrapper.py
 
 DOCUMENTATION TABLE OF CONTENTS:
 I. OVERVIEW
@@ -8,16 +8,15 @@ III. REQUIREMENTS
 IV. INPUTS
 V. OUTPUTS
 
-last updated DDK 2017-11-03
+last updated DDK 2019-09-18
 
 ################################################################################
 I. OVERVIEW:
 
 This script acts as a wrapper for Chris Rodgers' WhiskiWrap, which is itself a wrapper
 for Nathan Clack's whisk. I use this to organize the inputs and outputs in a
-way that I like and fits in with my workflow; all input paths and analysis 
-parameters are saved in a parameters JSON file, and analysis metadata is saved
-in a format consistent with the rest of my analyses.
+way that I like and fits in with my workflow; all parameters are saved in a parameters 
+JSON file, and analysis metadata is saved in a format consistent with the rest of my analyses.
 
 
 ################################################################################
@@ -25,7 +24,7 @@ II. USAGE:
 
 To use this funciton, enter the following into the command line:
 
-python ddk_whiski_wrapper.py /path/to/params/file
+python ddk_whiski_wrapper.py <mouse> <date> <site> <grab> <params_file>
 
 
 ################################################################################
@@ -39,23 +38,62 @@ III. REQUIREMENTS:
 
 2) The module `utilities`, available at https://github.com/danieldkato/utilities.git
 
+This code assumes that the raw data are organized as follows:
+|-mouse/
+    |-2P/
+        |-<date> # must be formatted '<YYYY>-<MM>-<DD>'
+            |-<site>/ # must be formatted 'site<N>'
+                |-<grab>/ # must be formatted 'grab<MM>' 
+                    |-video/
+                        |-<whisker_video>.mp4 # can be named anything
 
-################################################################################
-IV. INPUTS:
-
-This function takes a single command line input, namely, a path to a parameters
-JSON file (see USAGE above). Example contents of such a file could include:
-
-{
-    "inputs":[
-                {"path": </path/to/input/video>}
-            ],
-    "params":["n_trace_processes": <number of parallel processes to start>]
-}
+There must be only one .mp4 in the video directory.  
 
 Note this assumes that the input video depicts black whiskers on a white 
 background. If this is not the case, first run ffmpeg on the input video
 to invert the colors.
+
+
+################################################################################
+IV. INPUTS:
+
+1) mouse: string specifying the name of the mouse in the video to be processed.
+
+2) date: string specifying the date of the session during which the video to
+process was acquired. Must be formatted <YYYY>-<MM>-<DD>, where <YYYY> stands
+for year, <MM> stands for month, and <DD> stands for day.  
+
+3) site: string specifying the imaging site from which the movie to process was acquired. Should be formatted site<N>, where <n> is an integer site number.
+
+4) grab: string specifying the grab ID of the movie to process. Should be formatted grab<NN>, where <NN> stands for a 2-digit integer grab number.
+
+5) params_file: path to a JSON file speicfying WhiskiWrap parameters. Example
+contents of a parameters file could be: 
+
+{
+"pix_fmt":"gray",
+"bufsize":10E8,
+"duration":"None",
+"start_frame_time":"None",
+"start_frame_number":"None",
+"write_stderr_to_screen":"False",
+"tiffs_to_trace_directory":"",
+"sensitive":"False",
+"chunk_size":200,
+"chunk_name_pattern":"chunk%08d.tif",
+"stop_after_frame":"None",
+"delete_tiffs":"True",
+"timestamps_filename":"None",
+"monitor_video":"None",
+"monitor_video_kwargs":"None",
+"write_monitor_ffmpeg_stderr_to_screen":"False",
+"frame_func":"None",
+"n_trace_processes":4,
+"expectedrows":1000000,
+"verbose":"True",
+"skip_stitch":"False",
+"face":"right"
+}   
 
 
 ################################################################################
