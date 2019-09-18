@@ -69,44 +69,61 @@ and segment the operation of whisk.
 ################################################################################
 """
 import WhiskiWrap
-import sys
+from sys import argv
 import json 
 import os
 import subprocess
 from utilities_ddk.Metadata import Metadata, write_metadata
+import mouse_utils
 
-# Get path to paramters file from command line:
-params_file_path = sys.argv[1]
+def main(*argv):
 
-# Get parameters from JSON file:
-with open(params_file_path) as data_file:
-    json_data = json.load(data_file)
+    argv = argv[0]
+    mouse = argv[0]
+    date = argv[1]
+    site = argv[2]
+    grab = argv[3]
+    params_file_path = argv[4]
+  
+    # Find input video:
+    raw_tiff_path = mouse_utils.find_raw_TIFF(mouse, date, site, grab) # raw tiff path
+    sep = os.path.sep
+    fparts = raw_tiff_path.split(sep)
+    grab_directory = sep.join(fparts[0:-2]) # grab directory
+    vid_directory = os.path.join(grab_directory, 'video')  
+    videos = [x for x in os.listdir(vid_directory) if '.mp4' in x] 
 
-# Do some JSOn-to-Python conversion:
-params = json_data["params"]
-for p in params:
-    if params[p] == 'None':
-        params[p] = None
-    elif params[p] == 'True':
-        params[p] = True
-    elif params[p] == 'False':
-        params[p] = False
+    # Make sure there is exactly one mp4 in directory:
+    if len(videos) == 0:
+        raise Exception('No whisker video found for mouse ' + mouse + ', session ' + date + ', site ' + site[-1] + ', grab ' + grab[-2:] + '. Please ensure that whisker video is saved in ' + vid_directory + '.')
+    elif len(videos) > 1:
+        raise Exception('More than one whisker video found for mouse ' + mouse + ', session ' + date + ', site ' + site[-1] + ', grab ' + grab[-2:] + '. Please ensure that only one whisker video is saved in ' + vid_directory + '.')
 
-# Get inputs and parameters
-input_path = json_data["inputs"][0]["path"]
+    # Generate output path:
+    input_vid_name = videos[0]
+    input_path = os.path.join(vid_directory, input_vid_name)
+    print('input_path = ' + input_path)
+    output_fname = input_vid_name[0:-4] + '_whiski_output.hdf5'
+    output_path = os.path.join(vid_directory, output_fname)
 
-"""
-# Invert the video using ffmpeg (acquired as white on black; trace requires black on white)
-raw_vid_name = os.path.basename(input_path)[0:-3]
-inverted_vid_path = os.path.dirname(input_path) + os.path.sep + raw_vid_name + '.mp4'
-subprocess.Popen(['ffmpeg', '-i', input_path, '-vf', 'lutyuv=y=negval', '-vcodec', 'mpeg4', '-q', '2', inverted_vid_path])
-"""
+    # Get parameters from JSON file:
+    with open(params_file_path) as data_file:
+        params = json.load(data_file)
 
-# Auto-generate name of output file:
-output_path = os.path.dirname(input_path) + os.path.sep + 'whiski_output.hdf5'
+    # Do some JSOn-to-Python conversion:
+    for p in params:
+        if params[p] == 'None':
+            params[p] = None
+        elif params[p] == 'True':
+            params[p] = True
+        elif params[p] == 'False':
+           params[p] = False
 
-# Create input_reader object:
-input_reader = WhiskiWrap.FFmpegReader(input_filename=input_path,
+    # Auto-generate name of output file:
+    #output_path = os.path.dirname(input_path) + os.path.sep + 'whiski_output.hdf5'
+
+    # Create input_reader object:
+    input_reader = WhiskiWrap.FFmpegReader(input_filename=input_path,
         pix_fmt=params["pix_fmt"],
         bufsize=int(params["bufsize"]),
         duration=params["duration"],
@@ -114,9 +131,9 @@ input_reader = WhiskiWrap.FFmpegReader(input_filename=input_path,
         start_frame_number=params["start_frame_number"],
         write_stderr_to_screen=params["write_stderr_to_screen"])
 
-# Run WhiskiWrap:
-print("Running WhiskiWrap...")
-WhiskiWrap.interleaved_read_trace_and_measure(input_reader=input_reader,
+    # Run WhiskiWrap:
+    print("Running WhiskiWrap...")
+    WhiskiWrap.interleaved_read_trace_and_measure(input_reader=input_reader,
         tiffs_to_trace_directory=os.path.dirname(input_path),
         sensitive=params["sensitive"],
         chunk_size=params["chunk_size"],
@@ -135,13 +152,15 @@ WhiskiWrap.interleaved_read_trace_and_measure(input_reader=input_reader,
         skip_stitch=params["skip_stitch"],
         face=params["face"])
 
-# Create Metadata object:
-print("Getting metadata...")
-M = Metadata()
-M.add_input(input_path)
-M.add_output(output_path)
-M.dict["parameters"] = json_data["params"]
-metadata_path = os.path.dirname(input_path) + os.path.sep + 'whiski_wrap_metadata.json'
-write_metadata(M, metadata_path)
+    # Create Metadata object:
+    print("Getting metadata...")
+    M = Metadata()
+    M.add_input(input_path)
+    M.add_output(output_path)
+    M.dict["parameters"] = json_data["params"]
+    metadata_path = os.path.dirname(input_path) + os.path.sep + 'whiski_wrap_metadata.json'
+    write_metadata(M, metadata_path)
 
 
+if __name__ == "__main__":
+    main(argv[1:])
