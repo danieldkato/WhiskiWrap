@@ -1,3 +1,90 @@
+"""
+preprocess_whisker_video.py
+
+DOCUMENTATION TABLE OF CONTENTS:
+I. OVERVIEW
+II. USAGE
+III. REQUIREMENTS
+IV. INPUTS
+V. OUTPUTS
+
+last updated DDK 2019-09-18
+
+################################################################################
+I. OVERVIEW:
+
+This script acts as a wrapper for ffmpeg, which I use to invert, crop, and
+re-format raw whisker video from .avi to .mp4 to prepare it to run through
+WhiskiWrap. I use this wrapper to organize the inputs and outputs in a way that
+I like and fits in with my workflow; all parameters are saved in a parameters
+JSON file, and analysis metadata is saved in a format consistent with the rest
+of my analyses.
+
+
+################################################################################
+II. USAGE:
+
+To use this funciton, enter the following into the command line:
+
+python preprocess_whisker_video.py <mouse> <date> <site> <grab> <params_file> <w> <h> <x> <y>
+
+
+################################################################################
+III. REQUIREMENTS:
+
+1) The module `utilities`, available at https://github.com/danieldkato/utilities.git
+
+This code assumes that the raw data are organized as follows:
+|-mouse/
+    |-2P/
+        |-<date> # must be formatted '<YYYY>-<MM>-<DD>'
+            |-<site>/ # must be formatted 'site<N>'
+                |-<grab>/ # must be formatted 'grab<MM>' 
+                    |-video/
+                        |-<whisker_video>.avi # can be named anything
+
+There must be only one .avi in the video directory.  
+
+Note this assumes that the input video depicts white whiskers on a black
+background. This is how I acquire my raw video, which must be inverted in order
+to be compatible with whisk. 
+
+
+################################################################################
+IV. INPUTS:
+
+1) mouse: string specifying the name of the mouse in the video to be processed.
+
+2) date: string specifying the date of the session during which the video to
+process was acquired. Must be formatted <YYYY>-<MM>-<DD>, where <YYYY> stands
+for year, <MM> stands for month, and <DD> stands for day.  
+
+3) site: string specifying the imaging site from which the movie to process was acquired. Should be formatted site<N>, where <n> is an integer site number.
+
+4) grab: string specifying the grab ID of the movie to process. Should be formatted grab<NN>, where <NN> stands for a 2-digit integer grab number.
+
+5) w: the desired width of the cropped output video, in pixels   
+
+6) h: the desired height of the cropped output video, in pixels   
+
+7) x: the x-coordinate, in pixels, of the upper-left hand corner of the area to
+include in the output movie.     
+
+8) y: the y-coordinate, in pixels, of the upper-left hand corner of the area to
+include in the output movie.     
+
+
+################################################################################
+V. OUTPUTS:
+
+This function calls ffmpeg to invert the input video (i.e., switch black and
+white), crop it, and convert it from a.avi to a .mp4 (necessary to work with
+WhiskiWrap). 
+
+
+################################################################################
+"""
+
 from sys import argv
 import os
 import mouse_utils
