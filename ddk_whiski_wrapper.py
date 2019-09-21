@@ -195,7 +195,7 @@ def main(*argv):
     M = Metadata()
     M.add_input(input_path)
     M.add_output(output_path)
-    M.dict["parameters"] = json_data["params"]
+    M.dict["parameters"] = params
     metadata_path = os.path.dirname(input_path) + os.path.sep + 'whiski_wrap_metadata.json'
     write_metadata(M, metadata_path)
 
