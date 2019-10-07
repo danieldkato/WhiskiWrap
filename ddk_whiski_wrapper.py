@@ -111,8 +111,8 @@ from sys import argv
 import json 
 import os
 import subprocess
-from utilities_ddk.Metadata import Metadata, write_metadata
-import mouse_utils
+from utilities_ddk.python.Metadata import Metadata, write_metadata
+from utilities_ddk.python.mouse_utils import find_raw_TIFF
 
 def main(*argv):
 
@@ -124,7 +124,7 @@ def main(*argv):
     params_file_path = argv[4]
   
     # Find input video:
-    raw_tiff_path = mouse_utils.find_raw_TIFF(mouse, date, site, grab) # raw tiff path
+    raw_tiff_path = find_raw_TIFF(mouse, date, site, grab) # raw tiff path
     sep = os.path.sep
     fparts = raw_tiff_path.split(sep)
     grab_directory = sep.join(fparts[0:-2]) # grab directory
