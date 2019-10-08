@@ -101,8 +101,6 @@ V. OUTPUTS:
 
 This function saves to secondary storage an hdf5 file containing the output of 
 whisk. It also creates a large number of temporary files used to parallelize
-and segment the operation of whisk.
-
 
 ################################################################################
 """
@@ -112,7 +110,8 @@ import json
 import os
 import subprocess
 from utilities_ddk.python.Metadata import Metadata, write_metadata
-from utilities_ddk.python.mouse_utils import find_raw_TIFF, create_dummy_file 
+from utilities_ddk.python.mouse_utils import find_raw_TIFF, create_dummy_file, find_max_dir_suffix 
+
 
 
 def main(*argv):
@@ -141,9 +140,9 @@ def main(*argv):
     # Generate output path:
     input_vid_name = videos[0]
     input_path = os.path.join(vid_directory, input_vid_name)
-    print('input_path = ' + input_path)
+    max_whiski_dir = find_max_dir_suffix(vid_directory, 'whiski_output')
     output_fname = input_vid_name[0:-4] + '_whiski_output.hdf5'
-    output_path = os.path.join(vid_directory, output_fname)
+    output_path = os.path.join(vid_directory, 'whiski_output_' + str(max_whiski_dir+1), output_fname)
 
     # Get parameters from JSON file:
     with open(params_file_path) as data_file:
