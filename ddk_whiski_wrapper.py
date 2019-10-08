@@ -113,6 +113,19 @@ from utilities_ddk.python.Metadata import Metadata, write_metadata
 from utilities_ddk.python.mouse_utils import find_raw_TIFF, create_dummy_file, find_max_dir_suffix 
 
 
+habanero_root = '/rigel/zi/users/dk2643/MultiSens/data'
+farscape_root = '/mnt/farscape/homes/dan/MultiSens/data'
+
+
+
+def transfer_whiski_output(output_path):
+    output_dir = os.path.split(output_path)[0]
+    farscape_output_dir = output_dir.replace(habanero_root, farscape_root) 
+    farscape_output_parent = os.path.split(farscape_output_dir)
+    cmd = 'scp -r ' + output_dir + 'dan@companion.bruno.zi.columbia.edu:' + farscape_output_parent  
+    os.system(cmd2)
+
+
 
 def main(*argv):
 
