@@ -112,7 +112,8 @@ import json
 import os
 import subprocess
 from utilities_ddk.python.Metadata import Metadata, write_metadata
-from utilities_ddk.python.mouse_utils import find_raw_TIFF
+from utilities_ddk.python.mouse_utils import find_raw_TIFF, create_dummy_file 
+
 
 def main(*argv):
 
@@ -171,24 +172,28 @@ def main(*argv):
 
     # Run WhiskiWrap:
     print("Running WhiskiWrap...")
-    WhiskiWrap.interleaved_read_trace_and_measure(input_reader=input_reader,
-        tiffs_to_trace_directory=os.path.dirname(input_path),
-        sensitive=params["sensitive"],
-        chunk_size=params["chunk_size"],
-        chunk_name_pattern=params["chunk_name_pattern"],
-        stop_after_frame=params["stop_after_frame"],
-        delete_tiffs=params["delete_tiffs"],
-        timestamps_filename=params["timestamps_filename"],
-        monitor_video=params["monitor_video"],
-        monitor_video_kwargs=params["monitor_video_kwargs"],
-        write_monitor_ffmpeg_stderr_to_screen=params["write_monitor_ffmpeg_stderr_to_screen"],
-        h5_filename=output_path,
-        frame_func=params["frame_func"],
-        n_trace_processes=params["n_trace_processes"],
-        expectedrows=params["expectedrows"],
-        verbose=params["verbose"],
-        skip_stitch=params["skip_stitch"],
-        face=params["face"])
+    if not params['debug']: 
+        WhiskiWrap.interleaved_read_trace_and_measure(input_reader=input_reader,
+            tiffs_to_trace_directory=os.path.dirname(input_path),
+            sensitive=params["sensitive"],
+            chunk_size=params["chunk_size"],
+            chunk_name_pattern=params["chunk_name_pattern"],
+            stop_after_frame=params["stop_after_frame"],
+            delete_tiffs=params["delete_tiffs"],
+            timestamps_filename=params["timestamps_filename"],
+            monitor_video=params["monitor_video"],
+            monitor_video_kwargs=params["monitor_video_kwargs"],
+            write_monitor_ffmpeg_stderr_to_screen=params["write_monitor_ffmpeg_stderr_to_screen"],
+            h5_filename=output_path,
+            frame_func=params["frame_func"],
+            n_trace_processes=params["n_trace_processes"],
+            expectedrows=params["expectedrows"],
+            verbose=params["verbose"],
+            skip_stitch=params["skip_stitch"],
+            face=params["face"])
+    # If running in debug mode, just create a dummy output file:
+    else:
+        create_dummy_file(output_path)
 
     # Create Metadata object:
     print("Getting metadata...")
