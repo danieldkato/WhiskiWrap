@@ -155,7 +155,10 @@ def main(*argv):
     input_path = os.path.join(vid_directory, input_vid_name)
     max_whiski_dir = find_max_dir_suffix(vid_directory, 'whiski_output')
     output_fname = input_vid_name[0:-4] + '_whiski_output.hdf5'
-    output_path = os.path.join(vid_directory, 'whiski_output_' + str(max_whiski_dir+1), output_fname)
+    output_dir = os.path.join(vid_directory, 'whiski_output_' + str(max_whiski_dir+1))
+    output_path = os.path.join(output_dir, output_fname)
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
 
     # Get parameters from JSON file:
     with open(params_file_path) as data_file:
