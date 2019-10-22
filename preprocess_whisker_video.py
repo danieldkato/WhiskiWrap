@@ -87,8 +87,8 @@ WhiskiWrap).
 
 from sys import argv
 import os
-import mouse_utils
-
+from utilities_ddk.python.mouse_utils import find_raw_TIFF
+ 
 def preprocess_whisker_video(*argv):
     # Read input arguments:
     argv = argv[0]
@@ -103,12 +103,12 @@ def preprocess_whisker_video(*argv):
     y = argv[7]
   
     # Find input video:
-    raw_tiff_path = mouse_utils.find_raw_TIFF(mouse, date, site, grab) # raw tiff path
+    raw_tiff_path = find_raw_TIFF(mouse, date, site, grab) # raw tiff path
     sep = os.path.sep
     fparts = raw_tiff_path.split(sep)
     grab_directory = sep.join(fparts[0:-2]) # grab directory
     vid_directory = os.path.join(grab_directory, 'video')  
-    videos = [x for x in os.listdir(vid_directory) if '.avi' in x] 
+    videos = [v for v in os.listdir(vid_directory) if '.avi' in v] 
 
     # Make sure there is exactly one whisker video in directory:
     if len(videos) == 0:
@@ -125,6 +125,11 @@ def preprocess_whisker_video(*argv):
    
     # Generate command:
     cmd = 'ffmpeg -i ' + input_vid_path + ' -vf "lutyuv=y=negval,crop=' + w + ':' + h + ':' + x + ':' + y + '" -vcodec mpeg4 -q 2 ' + output_vid_path  
+    print('w = ' + w)
+    print('h = ' + h)
+    print('x = ' + x)
+    print('y = ' + y)
+    print('cmd = ' + cmd)
 
     # Execute command through command line:
     os.system(cmd)
