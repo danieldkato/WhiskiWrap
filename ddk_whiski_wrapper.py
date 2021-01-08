@@ -1,5 +1,120 @@
 """
-ddk_whisi_wrapper.py
+NAME
+ddk_whiski_wrapper.py
+
+
+
+SYNOPSIS
+python ddk_whiski_wrapper.py <mouse> <date> <site> <grab> <params_file>
+
+
+
+DESCRIPTION
+Wrapper script for Chris Rodgers' WhiskiWrap, which is itself a wrapper for
+Nathan Clack's whisk. I use this to organize the inputs and outputs in a way
+that I like and fits in with my workflow; all parameters are saved in a
+parameters JSON file, and analysis metadata is saved in a format consistent
+with the rest of my analyses.
+
+<mouse>: 
+    Name of the mouse in the video to be processed.
+
+<date>: 
+    Date of the session during which the video to process was acquired. Must be
+    formatted <YYYY>-<MM>-<DD>, where <YYYY> stands for year, <MM> stands for
+    month, and <DD> stands for day.  
+
+<site>: 
+    Name of the imaging site from which the movie to process was acquired.
+    Should be formatted site<N>, where <N> is an integer site number.
+
+<grab>: 
+    Grab ID of the movie to process. Should be formatted grab<NN>, where <NN>
+    stands for a 2-digit integer grab number.
+
+<params_file>: 
+    Path to a JSON file speicfying WhiskiWrap parameters. See EXAMPLES below on
+    how to format. 
+
+
+
+RETURNS
+This function saves to secondary storage an hdf5 file containing the output of
+whisk. It also creates a large number of temporary files used to parallelize
+the input movie as well as a JSON metadata file including paths and sha1
+checksums to input and output files, parameters, and any available version
+information about software dependenies. 
+
+
+
+SOFTWARE DEPENDENCIES
+* WhiskiWrap, available at https://github.com/cxrodgers/WhiskiWrap/.git. Note that
+   this package itself has a number of dependencies, including: 
+        a) whisk, 
+        b) tifffile, and
+        c) my, another module available on cxrodgers' github.
+
+* The module `utilities`, available at https://github.com/danieldkato/utilities.git
+
+
+
+OTHER REQUIREMENTS
+This code assumes that the raw data are organized as follows:
+|-mouse/
+    |-2P/
+        |-<date> # must be formatted '<YYYY>-<MM>-<DD>'
+            |-<site>/ # must be formatted 'site<N>'
+                |-<grab>/ # must be formatted 'grab<MM>' 
+                    |-video/
+                        |-<whisker_video>.mp4 # can be named anything
+
+There must be only one .mp4 in the video directory.  
+
+Note this assumes that the input video depicts black whiskers on a white 
+background. If this is not the case, first run ffmpeg on the input video
+to invert the colors.
+
+If running on a system where whisk or WhiskiWrap must be run from a conda
+environment, the environment must be activated before running this script.
+
+
+
+EXAMPLES
+Example contents of a parameters JSON file could be: 
+
+{
+"pix_fmt":"gray",
+"bufsize":10E8,
+"duration":"None",
+"start_frame_time":"None",
+"start_frame_number":"None",
+"write_stderr_to_screen":"False",
+"tiffs_to_trace_directory":"",
+"sensitive":"False",
+"chunk_size":200,
+"chunk_name_pattern":"chunk%08d.tif",
+"stop_after_frame":"None",
+"delete_tiffs":"True",
+"timestamps_filename":"None",
+"monitor_video":"None",
+"monitor_video_kwargs":"None",
+"write_monitor_ffmpeg_stderr_to_screen":"False",
+"frame_func":"None",
+"n_trace_processes":4,
+"expectedrows":1000000,
+"verbose":"True",
+"skip_stitch":"False",
+"face":"right"
+}   
+
+
+Last updated DDK 2019-11-23.
+
+
+
+
+
+
 
 DOCUMENTATION TABLE OF CONTENTS:
 I. OVERVIEW
@@ -153,7 +268,7 @@ def main(*argv):
     # Generate output path:
     input_vid_name = videos[0]
     input_path = os.path.join(vid_directory, input_vid_name)
-    max_whiski_dir = find_max_dir_suffix(vid_directory, 'whiski_output')
+    max_whiski_dir = find_max_dir_suffix(vid_directory, 'whiski_output_')
     output_fname = input_vid_name[0:-4] + '_whiski_output.hdf5'
     output_dir = os.path.join(vid_directory, 'whiski_output_' + str(max_whiski_dir+1))
     output_path = os.path.join(output_dir, output_fname)
